@@ -144,30 +144,93 @@ var FIZZ = (function(){
         };
 
         this.checkCollision = function (foreign_entity, world) {    
-
+            
             var edges = foreign_entity.edges;
             var opposingX = (foreign_entity.velocity.x < 0 && this.velocity.x < 0 ||foreign_entity.velocity.x > 0 && this.velocity.x > 0);
             var opposingY = (foreign_entity.velocity.y < 0 && this.velocity.y < 0 ||foreign_entity.velocity.y > 0 && this.velocity.y > 0);
             var distanceX, distanceY, adjustments = {};
+            
+            
+            /*
+             * TODO: Figure out this collision stuff a little more.  
+             * Seems like some of the checks could be combined or eliminated.
+             *
+             */
+            
             // check x values
-            if (edges.left >= this.edges.left && edges.left <= this.edges.right)  {
+            
+            // This Entity contained entirely within Foreign Entity's width
+            if (this.edges.left >= edges.left && this.edges.right <= edges.right) {
+                //alert('x5');
+                distanceX = 999999999;
+            }
+            // Foreign Entity contained entirely within This Entity's with
+            else if (this.edges.left <= edges.left && this.edges.right >= edges.right) {
+                //alert('x6');
+                distanceX = 999999999;
+            }
+            // This Entity's right edge overlapping Foreign Entity's left edge
+            else if (this.edges.right >= edges.left && this.edges.left <= edges.left)  {
+                //alert('x1');
                 distanceX = this.edges.right - edges.left;
                 adjustments.total = distanceX * -1;
             }
-            else if (edges.right >= this.edges.left && edges.right <= this.edges.right) {
+            // This Entities left edge overlapping with Foreign Entity's right edge 
+            else if (this.edges.left <= edges.right && this.edges.right >= edges.right) {
+                //alert('x2');
                 distanceX = edges.right - this.edges.left;
                 adjustments.total = distanceX;
+            }
+            // Foreign Entity's left edge overlapping with This Entity's right edge
+            else if(edges.left <= this.edges.right && edges.right >= this.edges.right) {
+                //alert('x3');
+                distanceX = edges.left - this.edges.right;
+                adjustments.total = distanceX * -1;
+            }
+            // Foreign Entity's right edge overlapping with This Entity's left edge
+            else if(edges.right >= this.edges.left && edges.left <= this.edges.left) {
+                //alert('x4');
+                distanceX = edges.right - this.edges.left;
+                adjustments.total = distanceX * -1;
             }
             else {
                 return;
             }
+            
 
             // check y values
-            if (edges.bottom >= this.edges.bottom && edges.bottom <= this.edges.top) {                        
+            
+            // This Entity contained entirely within Foreigh Entity's height
+            if (this.edges.bottom >= edges.bottom && this.edges.top <= edges.top) {
+                //alert('y5');
+                distanceY = 999999999;
+            }
+            // Foreign Entity contained entirely within This Entity's height
+            else if (this.edges.bottom <= edges.bottom && this.edges.top >= edges.top) {
+                //alert('y6');
+                distanceY = 999999999;
+            }
+            // This Entities top edge overlapping with Foreign Entity's bottom edge
+            else if (this.edges.top >= edges.bottom && this.edges.bottom <= edges.bottom) {                        
+                //alert('y1');
                 distanceY = this.edges.top - edges.bottom;
                 adjustments.total = distanceY * -1;
             }
-            else if (edges.top >= this.edges.bottom && this.top <= this.edges.top) {
+            // This Entities bottom edge overlapping with Foreign Entity's top edge
+            else if (this.edges.bottom <= edges.top && this.edges.top >= edges.top) {
+                //alert('y2');
+                distanceY = edges.top - this.edges.bottom;
+                adjustments.total = distanceY;
+            }
+            // Foreign Entities bottom edge overlapping with This Entity's top edge
+            else if (edges.bottom <= this.edges.top && edges.top >= this.edges.top) {
+                //alert('y3');
+                distanceY = this.edges.top - edges.bottom;
+                adjustments.total = distanceY;
+            }
+            // Foreign Entities top edge overlapping with This Entity's bottom edge
+            else if (edges.top >= this.edges.bottom && edges.bottom <= this.edges.bottom) {
+                //alert('y4');
                 distanceY = edges.top - this.edges.bottom;
                 adjustments.total = distanceY;
             }
