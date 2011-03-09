@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fizz JS Demo</title>
+        <script src="fizz.js"></script>
+    </head>
+    <body>
+        <canvas id="canvas" width="1200" height="500"></canvas>
+        <script>
+            var w = new FIZZ.World({
+                canvas : document.getElementById('canvas'),
+                gravity : -100,
+                fps : 100
+            });
+       
+            var r2 = new FIZZ.Rectangle({
+                width : 20,
+                height : 20,
+                bounciness : 0.7,
+                position : {x : 50, y : 300},
+                velocity : {x : 110, y : 150},
+                color : 'blue'
+            }).renderTo(w);
+       
+            var r = new FIZZ.Rectangle({
+                width : 100,
+                height : 20,
+                bounciness : .9,
+                gravity : 0,
+                position : {x : 50, y : 50},
+                velocity : {x : 100, y : 0},
+                color : 'red'
+            }).renderTo(w);
+
+          /*   
+            var c = new FIZZ.Circle({
+                radius : 10,
+                color : 'green',
+                bounciness : .8,
+                position : {x : 10, y : 10},
+                velocity : {x : 50, y : 100}
+            }).renderTo(w);  
+          */  
+            w.step();
+        </script>
+    </body>
+</html>
+
