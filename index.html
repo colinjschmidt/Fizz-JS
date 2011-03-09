@@ -2,10 +2,11 @@
 <html>
     <head>
         <title>Fizz JS Demo</title>
-        <script src="fizz.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css" />
     </head>
     <body>
         <canvas id="canvas" width="1200" height="500"></canvas>
+        <script src="fizz.js"></script>
         <script>
             var w = new FIZZ.World({
                 canvas : document.getElementById('canvas'),
@@ -32,7 +33,7 @@
                 color : 'red'
             }).renderTo(w);
 
-          /*   
+             
             var c = new FIZZ.Circle({
                 radius : 10,
                 color : 'green',
@@ -40,7 +41,7 @@
                 position : {x : 10, y : 10},
                 velocity : {x : 50, y : 100}
             }).renderTo(w);  
-          */  
+          
             w.step();
         </script>
     </body>

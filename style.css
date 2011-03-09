@@ -1,0 +1,11 @@
+/* 
+    Document   : style
+    Created on : Mar 8, 2011, 10:10:10 PM
+    Author     : Colin Schmidt
+*/
+
+#canvas{
+    border: 0px solid black;
+    border-width: 0 1px 3px 0;
+} 
+
