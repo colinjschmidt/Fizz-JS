@@ -2,189 +2,215 @@ var FIZZ = (function(){
   
     var _self = {};
     
+    
+    var collisionTypes = {
+        'light' : 0,
+        'normal': 1,
+        'heavy' : 2,
+        'static': 3
+    };
+    
     _self.World = function (config) {
         
-        var _world = {
-            canvas : document.getElementsByTagName('canvas')[0], // default to first canvas element
-            context : null,
-            width : 0,
-            height : 0,
-            fps : 60,
-            gravity : -50,
-            stats : {
-                steps : {
-                    count : 0,
-                    delta: 0,
-                    last : 0,
-                    record : function () {
-                        var t = (new Date()).getTime();
-                        if (this.count > 0) {
-                            this.delta = (t - this.last) / 1000; // delta in seconds
-                        }
-                        this.last = t;
-                        this.count++;
-                    }
-                }
-            },
-            entities : [],
-            entityMap : [],
-            entityCollisions : [],
-            init : function (config) {
-                for (var i in config) {
-                    if (config.hasOwnProperty(i)) { 
-                        this[i] = config[i];
-                    }
-                }
-                this.context = this.canvas.getContext('2d');
-                this.width = this.canvas.width;
-                this.height = this.canvas.height;
-            },
-            step : function () {
-                
-                var world = this;
-                this.clear();
-                this.draw();
-                this.stats.steps.record();
-                setTimeout(function () {
-                    world.step();
-                }, 1000/this.fps);
-                
-            },
-            clear : function () {
-                this.context.clearRect(0, 0, this.width, this.height);
-            },
-            draw : function () {
-                for (var i = 0, len = this.entities.length; i < len; i++) {
-                        
-                        var entity = this.entities[i];
-                        entity.move(this);
-                        entity.render(this);
-                        for (var j = 0; j < i; j++) {
-                            entity.checkCollision(this.entities[j], this);
-                        }
-                }
-                for (var i in this.entityCollisions) {
-                    if (this.entityCollisions.hasOwnProperty(i)) {
-                        var entity = this.entityCollisions[i].entity;
-                        var plane = this.entityCollisions[i].collisionPlane;
-                        entity.velocity[plane] = entity.velocity[plane] * -1 * entity.bounciness;
-                    } 
-                }
-                this.entityCollisions = [];
-            },
-            getRealY : function (y) {
-                   return this.height - y;
+        // Use the first canvas element by default
+        this.canvas = document.getElementsByTagName('canvas')[0];
+        
+        // The default framerate (ideally)
+        this.fps = 100;
+        
+        // The default gravity in pixels/second/second
+        this.gravity = -100; 
+        
+        // Keeps track of entities and collisions
+        this.entities = [];
+        this.collisions = [];
+        
+        // Keeps track of total steps and time between steps in seconds
+        this.steps = {};
+        this.steps.count = 0;
+        this.steps.delta = 0;
+        this.steps.last = 0;
+        this.steps.record = function () {
+            var t = (new Date()).getTime();
+            if (this.count > 0) {
+                this.delta = (t - this.last) / 1000; // delta in seconds
             }
+            this.last = t;
+            this.count++;
+        };
+        
+        this.step = function () {
+                
+            var world = this;
+            this.clear();
+            this.draw();
+            this.steps.record();
+            setTimeout(function () {
+                world.step();
+            }, 1000/this.fps);
+
+        };
+        
+        this.clear = function () {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        };
+        
+        this.draw = function () {
+            for (var i = 0, len = this.entities.length; i < len; i++) {
+
+                    var entity = this.entities[i];
+                    entity.move(this);
+                    entity.render(this);
+                    for (var j = 0; j < i; j++) {
+                        entity.checkCollision(this.entities[j], this);
+                    }
+            }
+            
+            this.handleCollisions();
+        };
+        this.handleCollisions = function () {
+            for (var i in this.collisions) {
+                if (this.collisions.hasOwnProperty(i)) {
+                    var entity = this.collisions[i].entity;
+                    var plane = this.collisions[i].plane;
+                    var adjustment = this.collisions[i].adjustment;
+                    entity.position[plane] += adjustment;
+                    entity.velocity[plane] = entity.velocity[plane] * -1 * entity.bounciness;
+                } 
+            }
+            this.collisions = [];
+        };
+        this.getRealY = function (y) {
+            return this.canvas.height - y;
         };
         
         for (var i in config) {
             if (config.hasOwnProperty(i)) { 
-                _world[i] = config[i];
+                this[i] = config[i];
             }
         }
-        _world.context = _world.canvas.getContext('2d');
-        _world.width = _world.canvas.width;
-        _world.height = _world.canvas.height; 
-    
-        return _world;
+        
+        this.context = this.canvas.getContext('2d'); 
+
     };
     
     _self.Entity = function (config) {
         
-        var _entity = {
-            color : 'black',
-            bounciness : 0,
-            gravity : 1,
-            position : { x : 0, y : 0},
-            velocity : { x : 1, y : 0},
-            acceleration : { x : 0, y : 0},
-            edges : {
-                top : 0,
-                right : 0,
-                bottom : 0,
-                left : 0
-            },
-            move : function (world) {
-                
-                this.velocity.x += this.acceleration.x * world.stats.steps.delta;
-                
-                if (this.edges.bottom <= 0 && this.bounciness <= 0) {
-                    this.acceleration.y = 0;
-                    this.velocity.y = 0;
-                }
-                else {
-                    var accelY = this.acceleration.y + world.gravity * this.gravity;
-                    this.velocity.y += accelY * world.stats.steps.delta;
-                }
-                
-                this.position.x += this.velocity.x * world.stats.steps.delta;
-                this.position.y += (this.edges.bottom <= 0 && this.velocity.y <= 0) ? 0 : this.velocity.y * world.stats.steps.delta;
-                
-                this.computeEdges();
-                
-                if (this.bounciness > 0 && this.edges.bottom <= 0) {
-                    this.velocity.y = this.velocity.y * -1 * this.bounciness;
-                }
-            },
-            renderTo : function (world) {
-                if (typeof world !== 'undefined') {
-                    world.entities.push(this);
-                    this.render(world);
-                }
-                return this;
-            },
-            
-            checkCollision : function (foreign_entity, world) {    
-                
-                var edges = foreign_entity.edges;
-                var opposingX = (foreign_entity.velocity.x < 0 && this.velocity.x < 0 ||foreign_entity.velocity.x > 0 && this.velocity.x > 0);
-                var opposingY = (foreign_entity.velocity.y < 0 && this.velocity.y < 0 ||foreign_entity.velocity.y > 0 && this.velocity.y > 0);
-                var distanceX, distanceY;
-                
-                // check x values
-                if (edges.left >= this.edges.left && edges.left <= this.edges.right)  {
-                    distanceX = this.edges.right - edges.left;
-                }
-                else if (edges.right >= this.edges.left && edges.right <= this.edges.right) {
-                    distanceX = edges.right - this.edges.left;
-                }
-                else {
-                    return;
-                }
-                
-                // check y values
-                if (edges.bottom >= this.edges.bottom && edges.bottom <= this.edges.top) {                        
-                    distanceY = this.edges.top - edges.bottom;        
-                }
-                else if (edges.top >= this.edges.bottom && this.top <= this.edges.top) {
-                    distanceY = edges.top - this.edges.bottom;
-                }
-                else {
-                    return;
-                }
-                
-                world.entityCollisions.push({
-                    collisionPlane : (distanceX < distanceY) ? 'x' : 'y',
-                    opposing : (distanceX > distanceY) ? opposingX : opposingY,
-                    entity : foreign_entity
-                });
-                
-                world.entityCollisions.push({
-                    collisionPlane : (distanceX < distanceY) ? 'x' : 'y',
-                    opposing : (distanceX > distanceY) ? opposingX : opposingY,
-                    entity : this
-                });
-                
+        this.color = 'black';
+        
+        this.position = { x : 0, y : 0};
+        this.velocity = { x : 1, y : 0};
+        this.acceleration = { x : 0, y : 0};
+        
+        this.gravity = 1;
+        this.bounciness = 0;
+        this.collisionType = 'normal';
+        
+        this.edges = {};
+        this.edges.top = 0;
+        this.edges.right = 0;
+        this.edges.bottom = 0;
+        this.edges.left = 0;
+        
+        this.move = function (world) {
+
+            this.velocity.x += this.acceleration.x * world.steps.delta;
+
+            if (this.edges.bottom <= 0 && this.bounciness <= 0) {
+                this.acceleration.y = 0;
+                this.velocity.y = 0;
             }
+            else {
+                var accelY = this.acceleration.y + world.gravity * this.gravity;
+                this.velocity.y += accelY * world.steps.delta;
+            }
+
+            this.position.x += this.velocity.x * world.steps.delta;
+            this.position.y += (this.edges.bottom <= 0 && this.velocity.y <= 0) ? 0 : this.velocity.y * world.steps.delta;
+
+            this.computeEdges();
+
+            if (this.bounciness > 0 && this.edges.bottom <= 0) {
+                this.velocity.y = this.velocity.y * -1 * this.bounciness;
+            }
+        };
+        
+        this.renderTo = function (world) {
+            if (typeof world !== 'undefined') {
+                world.entities.push(this);
+                this.render(world);
+            }
+            return this;
+        };
+
+        this.checkCollision = function (foreign_entity, world) {    
+
+            var edges = foreign_entity.edges;
+            var opposingX = (foreign_entity.velocity.x < 0 && this.velocity.x < 0 ||foreign_entity.velocity.x > 0 && this.velocity.x > 0);
+            var opposingY = (foreign_entity.velocity.y < 0 && this.velocity.y < 0 ||foreign_entity.velocity.y > 0 && this.velocity.y > 0);
+            var distanceX, distanceY, adjustments = {};
+            // check x values
+            if (edges.left >= this.edges.left && edges.left <= this.edges.right)  {
+                distanceX = this.edges.right - edges.left;
+                adjustments.total = distanceX * -1;
+            }
+            else if (edges.right >= this.edges.left && edges.right <= this.edges.right) {
+                distanceX = edges.right - this.edges.left;
+                adjustments.total = distanceX;
+            }
+            else {
+                return;
+            }
+
+            // check y values
+            if (edges.bottom >= this.edges.bottom && edges.bottom <= this.edges.top) {                        
+                distanceY = this.edges.top - edges.bottom;
+                adjustments.total = distanceY * -1;
+            }
+            else if (edges.top >= this.edges.bottom && this.top <= this.edges.top) {
+                distanceY = edges.top - this.edges.bottom;
+                adjustments.total = distanceY;
+            }
+            else {
+                return;
+            }
+            
+            // Figure out which entity to adjust
+            if (collisionTypes[this.collisionType] > collisionTypes[foreign_entity.collisionType]) {
+                adjustments.thisEntity = 0;
+                adjustments.foreignEntity = adjustments.total * -1;
+            }
+            else if (collisionTypes[this.collisionType] < collisionTypes[foreign_entity.collisionType]) {
+                adjustments.thisEntity = adjustments.total;
+                adjustments.foreignEntity = 0;
+            }
+            else {
+                // collisionTypes are the same
+                adjustments.thisEntity = adjustments.total / 2 ;
+                adjustments.foreignEntity = adjustments.total / 2 * -1;
+            }
+
+            world.collisions.push({
+                plane : (distanceX < distanceY) ? 'x' : 'y',
+                adjustment : adjustments.thisEntity,
+                opposing : (distanceX > distanceY) ? opposingX : opposingY,
+                entity : this
+            });
+            
+            world.collisions.push({
+                plane : (distanceX < distanceY) ? 'x' : 'y',
+                adjustment : adjustments.foreignEntity,
+                opposing : (distanceX > distanceY) ? opposingX : opposingY,
+                entity : foreign_entity
+            });
+
         };
         
         for (var i in config) {
             if (config.hasOwnProperty(i)) { 
-                _entity[i] = config[i];
+                this[i] = config[i];
             }
         }
-        
-        return _entity;
     };
     
     /* RECTANGLE */
