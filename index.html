@@ -8,40 +8,81 @@
         <canvas id="canvas" width="1200" height="500"></canvas>
         <script src="fizz.js"></script>
         <script>
+            /*
+            var socket = new io.Socket("64.30.141.15");
+            socket.connect();
+            socket.on('connect', function(){ alert('connected') });
+            socket.on('message', function(message){ alert(message) });
+            socket.on('disconnect', function(){ alert('Disconnected') });
+            */
             var w = new FIZZ.World({
-                canvas : document.getElementById('canvas'),
-                gravity : -100,
-                fps : 100
+                canvas : document.getElementById('canvas')
             });
-       
-            var r2 = new FIZZ.Rectangle({
-                width : 20,
-                height : 20,
-                bounciness : 0.7,
-                position : {x : 50, y : 300},
-                velocity : {x : 110, y : 150},
-                color : 'blue'
-            }).renderTo(w);
-       
+
             var r = new FIZZ.Rectangle({
-                width : 100,
-                height : 20,
+                width : 50,
+                height : 50,
                 bounciness : .9,
                 gravity : 0,
-                position : {x : 50, y : 50},
-                velocity : {x : 100, y : 0},
-                color : 'red'
+                position : {x : 50, y : 320},
+                velocity : {x : 110, y : 0},
+                color : 'red',
+                collisionType: 'light'
             }).renderTo(w);
-
-             
+            
+            var r2 = new FIZZ.Rectangle({
+                width : 50,
+                height : 50,
+                bounciness : 0.77,
+                position : {x : 750, y : 420},
+                velocity : {x : -150, y : -150},
+                color : 'blue',
+                collisionType : 'heavy'
+            }).renderTo(w);
+            
+            var r3 = new FIZZ.Rectangle({
+                width : 50,
+                height : 50,
+                bounciness : 0,
+                gravity: 0,
+                position : {x : 150, y : 320},
+                velocity : {x : 0, y : 0},
+                color : 'green',
+                collisionType : 'static'
+            }).renderTo(w);
+            
+            /*
             var c = new FIZZ.Circle({
-                radius : 10,
+                radius : 60,
                 color : 'green',
                 bounciness : .8,
-                position : {x : 10, y : 10},
-                velocity : {x : 50, y : 100}
-            }).renderTo(w);  
-          
+                position : {x : 30, y : 150},
+                velocity : {x : 120, y : 100},
+                collisionType: 'light'
+            }).renderTo(w);
+           */
+           
+           /*
+            var colors = ['teal', 'green', 'yellow', 'red', 'blue', 'brown', 'purple', 'orange', 'black', 'pink'];
+            
+            for (var i = 1; i <= 100; i++) {
+                
+                var vxd = (i % 2 == 0) ? -1 : 1;
+                var vyd = (i % 3 == 0) ? -1 : 1;
+                
+                new FIZZ.Circle({
+                    radius : i,
+                    color : colors[Math.floor(Math.random()*10)],
+                    bounciness : 0.8,
+                    gravity : 0.5,
+                    position : {x : Math.floor(Math.random()*1000), y : Math.floor(Math.random()*500)},
+                    velocity : {x : (Math.floor(Math.random()*25) * vxd), y : (Math.floor(Math.random()*25) * vyd)},
+                    collisionType: 'normal'
+                }).renderTo(w);
+            }
+            */
+            
+            
             w.step();
         </script>
     </body>

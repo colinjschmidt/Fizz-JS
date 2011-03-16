@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fizz JS Collision Tests</title>
+        <style>
+            canvas{border: 2px solid black; float: left;}
+        </style>
+    </head>
+    <body>
+        <canvas id="c1" width="300" height="300"></canvas>
+        <canvas id="c2" width="300" height="300"></canvas>
+        <canvas id="c3" width="300" height="300"></canvas>
+        <canvas id="c4" width="300" height="300"></canvas>
+        <canvas id="c5" width="300" height="300"></canvas>
+        <canvas id="c6" width="300" height="300"></canvas>
+        <script src="fizz.js"></script>
+        <script>
+            
+            
+            /* Blue Floating Static with Red Bouncy Normal */
+            var w1 = new FIZZ.World({
+                canvas : document.getElementById('c1')
+            });
+            
+            var w1r1 = new FIZZ.Rectangle({
+                color : 'blue',
+                width : 50,
+                height : 50,
+                gravity : 0,
+                collisionType : 'static',
+                position : {x : 'center', y : 'center'},
+                velocity : {x : 0, y : 0},
+                zIndex : -5
+            }).renderTo(w1);
+            
+            var w1r2 = new FIZZ.Rectangle({
+                color : 'red',
+                width : 50,
+                height : 50,
+                bounciness : .5,
+                position : {x : 'center', y : 'top'},
+                velocity : {x : 0, y : 0}
+            }).renderTo(w1); 
+            
+            w1.step();
+            
+            
+            var w2 = new FIZZ.World({
+                canvas : document.getElementById('c2')
+            });
+            
+            var w2r1 = new FIZZ.Rectangle({
+                color : 'blue',
+                width : 50,
+                height : 50,
+                gravity : 0,
+                bounciness : 1,
+                position : {x : 'left', y : 'center'},
+                velocity : {x : 10, y : 0},
+                acceleration : {x : 100, y : 0}
+            }).renderTo(w2);
+            
+            var w2r2 = new FIZZ.Rectangle({
+                color : 'red',
+                width : 50,
+                height : 50,
+                gravity : 0,
+                bounciness : 1,
+                position : {x : 'right', y : 'center'},
+                velocity : {x : -10, y : 0},
+                acceleration : {x : -100, y : 0}
+            }).renderTo(w2); 
+            
+            w2.step();
+            
+            var w3 = new FIZZ.World({
+                canvas : document.getElementById('c3')
+            });
+            
+            var w3r1 = new FIZZ.Rectangle({
+                color : 'green',
+                width : 25,
+                height : 25,
+                bounciness : 1,
+                position : {x : 'left', y : 'center'},
+                velocity : {x : 40, y : -70}
+            }).renderTo(w3);
+            
+            var w3r2 = new FIZZ.Rectangle({
+                color : 'purple',
+                width : 25,
+                height : 25,
+                bounciness : 1,
+                position : {x : 'right', y : 'center'},
+                velocity : {x : -40, y : -70}
+            }).renderTo(w3); 
+            
+            w3.step();
+            
+            var w4 = new FIZZ.World({
+                canvas : document.getElementById('c4')
+            });
+            
+            var w4r1 = new FIZZ.Rectangle({
+                color : 'green',
+                width : 100,
+                height : 25,
+                bounciness : 0,
+                gravity: 0,
+                position : {x : 'center', y : 'bottom'},
+                velocity : {x : 0, y : 100}
+            }).renderTo(w4);
+            
+            var w4r2 = new FIZZ.Rectangle({
+                color : 'purple',
+                width : 25,
+                height : 25,
+                bounciness : 1,
+                gravity : 0,
+                collisionType : 'static',
+                position : {x : 'center', y : 'center'},
+                velocity : {x : 0, y : 0}
+            }).renderTo(w4); 
+            
+            w4.step();
+            
+            var w5 = new FIZZ.World({
+                canvas : document.getElementById('c5')
+            });
+            
+            var w6 = new FIZZ.World({
+                canvas : document.getElementById('c6')
+            });
+        </script>
+    </body>
+</html>
