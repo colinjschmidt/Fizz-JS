@@ -434,7 +434,5 @@ var FIZZ = (function(){
     _self.Circle.prototype.constructor = _self.Circle;
     
     return _self;
-  
+
 })();
-
-
